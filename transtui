@@ -41,7 +41,7 @@
                                       `((engine ,engine)
                                         (from ,from)
                                         (to ,to)
-                                        (text ,text))))
+                                        (text ,(regexp-replace #/\\n/ text "\n")))))
     (and res
          (parse-json-string body))))
 

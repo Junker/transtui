@@ -58,12 +58,15 @@
 
 
 (define (print-help)
-  (show #t "Usage:" nl
-        (fitted/right 15 "--from") "from language (e.g. 'en')"
-        (fitted/right 15 "--to") "to language (e.g. 'en')"
-        (fitted/right 15 "--engine") "translation engine (e.g. google,yandex etc)"
-        (fitted/right 15 "--text") "text to translate"
-        (fitted/right 15 "--server") "mozhi server (e.g. 'mozhi.aryak.me')"))
+  (let1 %print-item (lambda (arg descr)
+                      (show #t (fitted/right 12 arg) descr nl))
+    (show #t "Usage: transtui [options]" nl)
+    (%print-item "--from" "from language (e.g. 'en')")
+    (%print-item "--to" "to language (e.g. 'en')")
+    (%print-item "--engine" "translation engine (e.g. google,yandex etc)")
+    (%print-item "--text" "text to translate")
+    (%print-item "--server" "mozhi server (e.g. 'mozhi.aryak.me')")
+    (%print-item "--debug" "enable debug output")))
 
 (define (parse-args args)
   (let-args (cdr args)

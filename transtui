@@ -101,7 +101,48 @@
     (%print-command ".to" "to language (e.g. '.to de')")
     (%print-command ".engine" "translation engine (e.g. '.engine google')")
     (%print-command ".copy" "copy last translated text to clipboard")
-    (%print-command ".redo" "repeat translation")))
+    (%print-command ".redo" "repeat translation")
+    (%print-command ".engines" "print list of engines supported by Mozhi server")
+    (%print-command ".from-list" "print list of available source languages for engine")
+    (%print-command ".to-list" "print list of available target languages for engine")))
+
+(define (print-engines)
+  (receive (code headers body)
+      (http-get *server* "/api/engines"
+                :secure #t)
+    (print-http-debug code body)
+    (if (not (string= code "200"))
+        #f
+        (map (lambda (item)
+               (show #t (as-green (fitted/right 14 (car item)))
+                     (cdr item) nl))
+             (parse-json-string body)))))
+
+(define (print-from-list)
+  (receive (code headers body)
+      (http-get *server* (http-compose-query "/api/source_languages"
+                                             `((engine ,*engine*)))
+                :secure #t)
+    (print-http-debug code body)
+    (if (not (string= code "200"))
+        #f
+        (map (lambda (item)
+               (show #t (as-green (fitted/right 14 (assoc-ref item "Id")))
+                     (assoc-ref item "Name") nl))
+             (vector->list (parse-json-string body))))))
+
+(define (print-to-list)
+  (receive (code headers body)
+      (http-get *server* (http-compose-query "/api/target_languages"
+                                             `((engine ,*engine*)))
+                :secure #t)
+    (print-http-debug code body)
+    (if (not (string= code "200"))
+        #f
+        (map (lambda (item)
+               (show #t (as-green (fitted/right 14 (assoc-ref item "Id")))
+                     (assoc-ref item "Name") nl))
+             (vector->list (parse-json-string body))))))
 
 (define (interruptible-read-line)
   (let loop ()
@@ -128,7 +169,12 @@
              (exit))
             ((string=? text "")
              (newline))
-            ((string-prefix? ".from" text)
+            ((string=? ".engines" text)
+             (print-engines))
+            ((string=? ".to-list" text)
+             (print-to-list))
+            ((string=? ".from-list" text)
+             (print-from-list))
              (set! *from* (string-trim (string-drop text 6))))
             ((string-prefix? ".to" text)
              (set! *to* (string-trim (string-drop text 4))))

@@ -114,7 +114,8 @@
 ;; == MAIN
 (define (main args)
   (parse-args args)
-  (show #t (as-bold "Hint: ") "Print '.help' for help..." nl)
+  (when (string=? *last-text* "")
+    (show #t (as-bold "Hint: ") "Print '.help' for help..." nl))
   (print-prompt)
   (let loop ()
     (let* ((text (interruptible-read-line))

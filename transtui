@@ -33,20 +33,19 @@
                 :secure #t)
     (when *debug*
       (print-http-debug code body))
-    (values code headers body)))
+    (values (string=? code "200") body)))
 
 (define (translate text :key to from engine)
-  (receive (code headers body)
+  (receive (res body)
       (moizhi-get (http-compose-query "/api/translate"
                                       `((engine ,engine)
                                         (from ,from)
                                         (to ,to)
                                         (text ,text))))
-    (if (not (string= code "200"))
-        #f
-        (let1 json (parse-json-string body)
-          (values (assoc-ref json "translated-text")
-                  body)))))
+    (and res
+         (let1 json (parse-json-string body)
+           (values (assoc-ref json "translated-text")
+                   body)))))
 
 
 (define (trans text)
@@ -111,36 +110,33 @@
     (%print-command ".to-list" "print list of available target languages for engine")))
 
 (define (print-engines)
-  (receive (code headers body)
+  (receive (res body)
       (moizhi-get "/api/engines")
-    (if (not (string= code "200"))
-        #f
-        (map (lambda (item)
-               (show #t (as-green (fitted/right 14 (car item)))
-                     (cdr item) nl))
-             (parse-json-string body)))))
+    (and res
+         (map (lambda (item)
+                (show #t (as-green (fitted/right 14 (car item)))
+                      (cdr item) nl))
+              (parse-json-string body)))))
 
 (define (print-from-list)
-  (receive (code headers body)
+  (receive (res body)
       (moizhi-get (http-compose-query "/api/source_languages"
                                       `((engine ,*engine*))))
-    (if (not (string= code "200"))
-        #f
-        (map (lambda (item)
-               (show #t (as-green (fitted/right 14 (assoc-ref item "Id")))
-                     (assoc-ref item "Name") nl))
-             (vector->list (parse-json-string body))))))
+    (and res
+         (map (lambda (item)
+                (show #t (as-green (fitted/right 14 (assoc-ref item "Id")))
+                      (assoc-ref item "Name") nl))
+              (vector->list (parse-json-string body))))))
 
 (define (print-to-list)
-  (receive (code headers body)
+  (receive (res body)
       (moizhi-get (http-compose-query "/api/target_languages"
                                       `((engine ,*engine*))))
-    (if (not (string= code "200"))
-        #f
-        (map (lambda (item)
-               (show #t (as-green (fitted/right 14 (assoc-ref item "Id")))
-                     (assoc-ref item "Name") nl))
-             (vector->list (parse-json-string body))))))
+    (and res
+         (map (lambda (item)
+                (show #t (as-green (fitted/right 14 (assoc-ref item "Id")))
+                      (assoc-ref item "Name") nl))
+              (vector->list (parse-json-string body))))))
 
 (define (print-hints)
   (show #t (as-bold "Hint: ") "Print '.help' for help..." nl))

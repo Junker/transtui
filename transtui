@@ -25,19 +25,23 @@
         (as-blue "> ")))
 
 (define (print-http-debug code body)
-  (when *debug*
-    (show #t (as-red "HTTP Code: " code nl body nl))))
+  (show #t (as-red "HTTP Code: " code nl body nl)))
+
+(define (moizhi-get uri)
+  (receive (code headers body)
+      (http-get *server* uri
+                :secure #t)
+    (when *debug*
+      (print-http-debug code body))
+    (values code headers body)))
 
 (define (translate text :key to from engine)
   (receive (code headers body)
-      (http-get *server*
-                (http-compose-query "/api/translate"
-                                    `((engine ,engine)
-                                      (from ,from)
-                                      (to ,to)
-                                      (text ,text)))
-                :secure #t)
-    (print-http-debug code body)
+      (moizhi-get (http-compose-query "/api/translate"
+                                      `((engine ,engine)
+                                        (from ,from)
+                                        (to ,to)
+                                        (text ,text))))
     (if (not (string= code "200"))
         #f
         (let1 json (parse-json-string body)
@@ -108,9 +112,7 @@
 
 (define (print-engines)
   (receive (code headers body)
-      (http-get *server* "/api/engines"
-                :secure #t)
-    (print-http-debug code body)
+      (moizhi-get "/api/engines")
     (if (not (string= code "200"))
         #f
         (map (lambda (item)
@@ -120,10 +122,8 @@
 
 (define (print-from-list)
   (receive (code headers body)
-      (http-get *server* (http-compose-query "/api/source_languages"
-                                             `((engine ,*engine*)))
-                :secure #t)
-    (print-http-debug code body)
+      (moizhi-get (http-compose-query "/api/source_languages"
+                                      `((engine ,*engine*))))
     (if (not (string= code "200"))
         #f
         (map (lambda (item)
@@ -133,10 +133,8 @@
 
 (define (print-to-list)
   (receive (code headers body)
-      (http-get *server* (http-compose-query "/api/target_languages"
-                                             `((engine ,*engine*)))
-                :secure #t)
-    (print-http-debug code body)
+      (moizhi-get (http-compose-query "/api/target_languages"
+                                      `((engine ,*engine*))))
     (if (not (string= code "200"))
         #f
         (map (lambda (item)

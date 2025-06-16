@@ -50,11 +50,14 @@
 
 (define (trans text)
   (set! *last-text* text)
-  (set! *last-translated-text* (translate text
-                                          :from *from*
-                                          :to *to*
-                                          :engine *engine*))
-  (show #t *last-translated-text* nl))
+  (if-let1 trans-text (translate text
+                                 :from *from*
+                                 :to *to*
+                                 :engine *engine*)
+    (begin
+      (set! *last-translated-text* trans-text)
+      (show #t *last-translated-text* nl))
+    #f))
 
 (define (copy-clipboard)
   (call-with-output-process

@@ -45,22 +45,6 @@
     (and res
          (parse-json-string body))))
 
-(define (translate-all text :key to from)
-  (receive (res body)
-      (moizhi-get (http-compose-query "/api/translate"
-                                      `((engine "all")
-                                        (from ,from)
-                                        (to ,to)
-                                        (text ,text))))
-    (and res
-         (let1 json (parse-json-string body)
-           (values (map (lambda (item)
-                          (cons (assoc-ref item "engine")
-                                (assoc-ref item "translated-text")))
-                        (vector->list json))
-                   json)))))
-
-
 (define (trans text)
   (set! *last-text* text)
   (if-let1 translation (translate text

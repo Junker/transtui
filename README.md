@@ -16,3 +16,7 @@ rlwrap -n -H /dev/null ./transtui
 - [xclip](https://github.com/astrand/xclip) (optional, for clipboard support)
 - [rlwrap](https://github.com/hanslub42/rlwrap) (optional, for input history)
 - [mozhi](https://codeberg.org/aryak/mozhi) (optional, for self-hosting)
+
+## Documentation
+
+- [Public Mozhi instances](https://codeberg.org/aryak/mozhi#instances)

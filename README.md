@@ -14,5 +14,5 @@ rlwrap -n -H /dev/null ./transtui
 
 - [Gauche Scheme](http://practical-scheme.net/gauche/) installed
 - [xclip](https://github.com/astrand/xclip) (optional, for clipboard support)
-- [rlwrap](https://github.com/hanslub42/rlwrap) (optional, for history)
+- [rlwrap](https://github.com/hanslub42/rlwrap) (optional, for input history)
 - [mozhi](https://codeberg.org/aryak/mozhi) (optional, for self-hosting)

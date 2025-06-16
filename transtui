@@ -92,9 +92,9 @@
   (let1 %print-command (lambda (cmd descr)
                          (show #t (as-green (fitted/right 10 cmd))
                                descr nl))
-    (%print-command ".from" "from language")
-    (%print-command ".to" "to language")
-    (%print-command ".engine" "translation engine")
+    (%print-command ".from" "from language (e.g. '.from en')")
+    (%print-command ".to" "to language (e.g. '.to de')")
+    (%print-command ".engine" "translation engine (e.g. '.engine google')")
     (%print-command ".copy" "copy last translated text to clipboard")
     (%print-command ".redo" "repeat translation")))
 

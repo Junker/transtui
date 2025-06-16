@@ -1,0 +1,142 @@
+#!/usr/bin/env gosh
+
+(use scheme.show)
+(use scheme.show.color)
+(use scheme.list)
+(use srfi-13)
+(use srfi-1)
+(use rfc.json)
+(use rfc.http)
+(use gauche.process)
+(use gauche.parseopt)
+
+(define *server*) ; mozhi server
+(define *engine*)
+(define *from*)
+(define *to*)
+(define *debug*)
+(define *last-text* "")
+(define *last-translated-text* "")
+
+(define (print-prompt)
+  (show #t (as-blue "<trans")
+        " (" (as-magenta *engine*) ") "
+        (as-green *from*) ":" (as-green *to*)
+        (as-blue "> ")))
+
+
+(define (translate text :key to from engine)
+  (receive (code headers body)
+      (http-get *server*
+                (http-compose-query "/api/translate"
+                                    `((engine ,engine)
+                                      (from ,from)
+                                      (to ,to)
+                                      (text ,text)))
+                :secure #t)
+    (if *debug*
+        (show #t (as-red "HTTP Code: " code nl body nl)))
+    (if (not (string= code "200"))
+        #f
+        (let1 json (parse-json-string body)
+          (values (assoc-ref json "translated-text")
+                  body)))))
+
+
+(define (trans text)
+  (set! *last-text* text)
+  (set! *last-translated-text* (translate text
+                                          :from *from*
+                                          :to *to*
+                                          :engine *engine*))
+  (show #t *last-translated-text* nl))
+
+(define (copy-clipboard)
+  (call-with-output-process
+   "xclip -selection clipboard"
+	 (lambda (out) (display *last-translated-text* out))))
+
+
+(define (print-help)
+  (show #t "Usage:" nl
+        (fitted/right 15 "--from") "from language (e.g. 'en')"
+        (fitted/right 15 "--to") "to language (e.g. 'en')"
+        (fitted/right 15 "--engine") "translation engine (e.g. google,yandex etc)"
+        (fitted/right 15 "--text") "text to translate"
+        (fitted/right 15 "--server") "mozhi server (e.g. 'mozhi.aryak.me')"))
+
+(define (parse-args args)
+  (let-args (cdr args)
+    ((%help "h|help")
+     (%text "text=s")
+     (%to "to=s" "en")
+     (%from "from=s" "auto")
+     (%engine "engine=s" "google")
+     (%server "server=s" "mozhi.aryak.me")
+     (%debug "debug")
+     . restargs)
+    (when %help
+      (print-help)
+      (exit))
+    (set! *from* %from)
+    (set! *to* %to)
+    (set! *engine* %engine)
+    (set! *server* %server)
+    (set! *debug* %debug)
+    (when %text
+      (print-prompt)
+      (show #t %text nl)
+      (trans %text))))
+
+(define (print-commands)
+  (let1 %print-command (lambda (cmd descr)
+                         (show #t (as-green (fitted/right 10 cmd))
+                               descr nl))
+    (%print-command ".from" "from language")
+    (%print-command ".to" "to language")
+    (%print-command ".engine" "translation engine")
+    (%print-command ".copy" "copy last translated text to clipboard")
+    (%print-command ".redo" "repeat translation")))
+
+(define (interruptible-read-line)
+  (let loop ()
+    (guard (exn
+            ('unhandled-signal-error
+             (begin
+               (newline)
+               (print-prompt)
+               (loop))))
+      (read-line))))
+
+;; == MAIN
+(define (main args)
+  (parse-args args)
+  (show #t (as-bold "Hint: ") "Print '.help' for help..." nl)
+  (print-prompt)
+  (let loop ()
+    (let* ((text (interruptible-read-line))
+           (text (if (string? text)
+                     (string-trim-both text)
+                     text)))
+      (cond ((eof-object? text)
+             (exit))
+            ((string=? text "")
+             (newline))
+            ((string-prefix? ".from" text)
+             (set! *from* (string-trim (string-drop 6 text))))
+            ((string-prefix? ".to" text)
+             (set! *to* (string-trim (string-drop 4 text))))
+            ((string-prefix? ".engine" text)
+             (set! *engine*
+               (string-trim (string-drop text 8))))
+            ((string=? ".copy" text)
+             (copy-clipboard))
+            ((string=? ".redo" text)
+             (trans *last-text*))
+            ((or (string=? ".commands" text)
+                 (string=? ".help" text))
+             (print-commands))
+            (else
+             (trans text))))
+    (print-prompt)
+    (loop)))

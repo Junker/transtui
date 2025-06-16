@@ -45,19 +45,44 @@
     (and res
          (let1 json (parse-json-string body)
            (values (assoc-ref json "translated-text")
-                   body)))))
+                   json)))))
+
+(define (translate-all text :key to from)
+  (receive (res body)
+      (moizhi-get (http-compose-query "/api/translate"
+                                      `((engine "all")
+                                        (from ,from)
+                                        (to ,to)
+                                        (text ,text))))
+    (and res
+         (let1 json (parse-json-string body)
+           (values (map (lambda (item)
+                          (cons (assoc-ref item "engine")
+                                (assoc-ref item "translated-text")))
+                        (vector->list json))
+                   json)))))
 
 
 (define (trans text)
   (set! *last-text* text)
-  (if-let1 trans-text (translate text
-                                 :from *from*
-                                 :to *to*
-                                 :engine *engine*)
-    (begin
-      (set! *last-translated-text* trans-text)
-      (show #t *last-translated-text* nl))
-    #f))
+  (if (string=? *engine* "all")
+      (if-let1 trans-texts (translate-all text
+                                          :from *from*
+                                          :to *to*)
+        (begin
+          (for-each (lambda (item)
+                      (set! *last-translated-text* (cdr item))
+                      (show #t (as-green (car item) ": ")  (cdr item) nl))
+                    trans-texts))
+        #f)
+      (if-let1 trans-text (translate text
+                                     :from *from*
+                                     :to *to*
+                                     :engine *engine*)
+        (begin
+          (set! *last-translated-text* trans-text)
+          (show #t *last-translated-text* nl))
+        #f)))
 
 (define (copy-clipboard)
   (call-with-output-process

@@ -126,9 +126,9 @@
             ((string=? text "")
              (newline))
             ((string-prefix? ".from" text)
-             (set! *from* (string-trim (string-drop 6 text))))
+             (set! *from* (string-trim (string-drop text 6))))
             ((string-prefix? ".to" text)
-             (set! *to* (string-trim (string-drop 4 text))))
+             (set! *to* (string-trim (string-drop text 4))))
             ((string-prefix? ".engine" text)
              (set! *engine*
                (string-trim (string-drop text 8))))

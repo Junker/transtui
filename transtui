@@ -142,6 +142,9 @@
                      (assoc-ref item "Name") nl))
              (vector->list (parse-json-string body))))))
 
+(define (print-hints)
+  (show #t (as-bold "Hint: ") "Print '.help' for help..." nl))
+
 (define (interruptible-read-line)
   (let loop ()
     (guard (exn
@@ -156,7 +159,7 @@
 (define (main args)
   (parse-args args)
   (when (string=? *last-text* "")
-    (show #t (as-bold "Hint: ") "Print '.help' for help..." nl))
+    (print-hints))
   (print-prompt)
   (let loop ()
     (let* ((text (interruptible-read-line))

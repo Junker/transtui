@@ -175,10 +175,11 @@
              (print-to-list))
             ((string=? ".from-list" text)
              (print-from-list))
+            ((string-prefix? ".from " text)
              (set! *from* (string-trim (string-drop text 6))))
-            ((string-prefix? ".to" text)
+            ((string-prefix? ".to " text)
              (set! *to* (string-trim (string-drop text 4))))
-            ((string-prefix? ".engine" text)
+            ((string-prefix? ".engine " text)
              (set! *engine*
                (string-trim (string-drop text 8))))
             ((string=? ".copy" text)

@@ -24,6 +24,9 @@
         (as-green *from*) ":" (as-green *to*)
         (as-blue "> ")))
 
+(define (print-http-debug code body)
+  (when *debug*
+    (show #t (as-red "HTTP Code: " code nl body nl))))
 
 (define (translate text :key to from engine)
   (receive (code headers body)
@@ -34,8 +37,7 @@
                                       (to ,to)
                                       (text ,text)))
                 :secure #t)
-    (if *debug*
-        (show #t (as-red "HTTP Code: " code nl body nl)))
+    (print-http-debug code body)
     (if (not (string= code "200"))
         #f
         (let1 json (parse-json-string body)

@@ -52,12 +52,12 @@
                                   :to *to*
                                   :engine *engine*)
     (if (string=? *engine* "all")
-        (vector-for-each
-         (lambda (item)
-           (set! *last-translated-text* (assoc-ref item "translated-text"))
-           (show #t (as-green (assoc-ref item "engine") ": ")
-                 *last-translated-text* nl))
-         translation)
+        (vector-for-each (lambda (item)
+                           (set! *last-translated-text*
+                             (assoc-ref item "translated-text"))
+                           (show #t (as-green (assoc-ref item "engine") ": ")
+                                 *last-translated-text* nl))
+                         translation)
         (begin
           (set! *last-translated-text*
             (assoc-ref translation "translated-text"))

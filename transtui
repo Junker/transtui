@@ -27,13 +27,20 @@
 (define (print-http-debug code body)
   (show #t (as-red "HTTP Code: " code nl body nl)))
 
+(define (print-exn exn)
+  (show #t (as-red "Exception: " exn nl)))
+
 (define (moizhi-get uri)
-  (receive (code headers body)
-      (http-get *server* uri
-                :secure #t)
-    (when (or *debug* (string<> code "200"))
-      (print-http-debug code body))
-    (values (string=? code "200") body)))
+  (guard (exn
+          (#t
+           (print-exn exn)
+           (values #f "")))
+    (receive (code headers body)
+        (http-get *server* uri
+                  :secure #t)
+      (when (or *debug* (string<> code "200"))
+        (print-http-debug code body))
+      (values (string=? code "200") body))))
 
 (define (translate text :key to from engine)
   (receive (res body)

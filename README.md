@@ -7,7 +7,7 @@ A TUI (Text User Interface) application that leverages [Mozhi](https://codeberg.
 ```shell
 ./transtui
 # recomended usage
-rlwrap -n -H /dev/null ./transtui
+rlwrap ./transtui
 ```
 
 ## Requirements

@@ -2,6 +2,8 @@
 
 A TUI (Text User Interface) application that leverages [Mozhi](https://codeberg.org/aryak/mozhi) for translating text across multiple languages and engines.
 
+[![asciicast](https://asciinema.org/a/MAnqgZ9qxcz4DCr7j3edoaLBp.svg)](https://asciinema.org/a/MAnqgZ9qxcz4DCr7j3edoaLBp)
+
 ## Usage
 
 ```shell
